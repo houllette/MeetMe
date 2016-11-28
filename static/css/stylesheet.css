@@ -1,14 +1,14 @@
 @font-face {
   font-family: BrandonText-Bold;
-  src: url(../fonts/Brandon_bld.otf);
+  src: url(/static/fonts/Brandon_bld.otf);
 }
 
 @font-face {
   font-family: BrandonText-Light;
-  src: url(../fonts/Brandon_light.otf);
+  src: url(/static/fonts/Brandon_light.otf);
 }
 
-html, body {
+body {
   font-family: BrandonText-Light;
   font-size: 1.7vw;
   color: rgb(255,255,255);
@@ -44,4 +44,10 @@ h2 {
   font-size: 16px;
   margin: 4px 2px;
   cursor: pointer;
+}
+
+.content {
+  margin: auto;
+  /* height: 300px; */
+  width: 80%;
 }

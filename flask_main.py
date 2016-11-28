@@ -66,29 +66,6 @@ def choose():
     flask.g.calendars = list_calendars(gcal_service)
     return render_template('index.html')
 
-@app.route('/setrange')
-def setrange():
-    """
-    User chose a date range with the bootstrap daterange
-    widget.
-    """
-    app.logger.debug("Entering setrange")
-    daterange = request.form.get('daterange')
-    flask.session['daterange'] = daterange
-    daterange_parts = daterange.split()
-    flask.session['begin_date'] = interpret_date(daterange_parts[0])
-    flask.session['end_date'] = next_day(interpret_date(daterange_parts[2]))
-
-    begin_time = interpret_time(request.form.get('begin_time'))
-    end_time = interpret_time(request.form.get('end_time'))
-    if begin_time < end_time:
-        flask.session["begin_time"] = begin_time
-        flask.session["end_time"] = end_time
-    else:
-        flask.session["begin_time"] = end_time
-        flask.session["end_time"] = begin_time
-    return flask.redirect(flask.url_for("choose"))
-
 @app.route('/setcalendar')
 def setcalendar():
     selected_calendars = request.form.getlist("calendar")
@@ -118,12 +95,38 @@ def setblock():
 
 @app.route("/_example")
 def example():
-  """
-  Example ajax request handler
-  """
-  app.logger.debug("Got a JSON request");
-  rslt = { "key": "value" }
-  return jsonify(result=rslt)
+    """
+    Example ajax request handler
+    """
+    app.logger.debug("Got a JSON request");
+    rslt = { "key": "value" }
+    return jsonify(result=rslt)
+
+@app.route("/_setrange")
+def setrange():
+    app.logger.debug("Entering setrange")
+    start_date = interpret_date(request.args.get("start_date", type=str))
+    end_date = interpret_date(request.args.get("end_date", type=str))
+    if start_date < end_date:
+        flask.session["start_date"] = start_date
+        flask.session["end_date"] = end_date
+    else:
+        flask.session["start_date"] = end_date
+        flask.session["end_date"] = start_date
+
+    start_time = interpret_time(request.args.get("start_time", type=str))
+    end_time = interpret_time(request.args.get("end_time", type=str))
+    if start_time < end_time:
+        flask.session["start_time"] = start_time
+        flask.session["end_time"] = end_time
+    else:
+        flask.session["start_time"] = end_time
+        flask.session["end_time"] = start_time
+
+    #needs to go to choose now
+    rslt = { "key": "value" }
+    return jsonify(result=rslt)
+
 
 ##################################
 #
@@ -208,13 +211,13 @@ def init_session_values():
     now = arrow.now('local')     # We really should be using tz from browser
     tomorrow = now.replace(days=+1)
     nextweek = now.replace(days=+7)
-    flask.session["begin_date"] = tomorrow.floor('day').isoformat()
+    flask.session["start_date"] = tomorrow.floor('day').isoformat()
     flask.session["end_date"] = nextweek.ceil('day').isoformat()
     flask.session["daterange"] = "{} - {}".format(
         tomorrow.format("MM/DD/YYYY"),
         nextweek.format("MM/DD/YYYY"))
     # Default time span each day, 8 to 5
-    flask.session["begin_time"] = interpret_time("9am")
+    flask.session["start_time"] = interpret_time("9am")
     flask.session["end_time"] = interpret_time("5pm")
 
 def interpret_time( text ):
@@ -255,7 +258,7 @@ def interpret_date( text ):
     with the local time zone.
     """
     try:
-      as_arrow = arrow.get(text, "MM/DD/YYYY").replace(
+      as_arrow = arrow.get(text).replace(
           tzinfo=tz.tzlocal())
     except:
         flask.flash("Date '{}' didn't fit expected format 12/31/2001")

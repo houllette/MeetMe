@@ -3,19 +3,26 @@
   <head>
     <title>MeetMe</title>
     <!-- MIGHT HAVE TO REMOVE ../ FOR PRODUCTION -->
-    <link rel="stylesheet" type="text/css" href="../static/css/stylesheet.css">
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"/>
-
-    <script type="text/javascript" src="../static/js/script.js"></script>
-
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stylesheet.css')}}">
+    
     <!-- jquery from a content distribution network; probably cached -->
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/script.js')}}"></script>
   </head>
   <body>
     <div class="container">
+    <!--
+       with messages = get_flashed_messages() %}
+         if messages %}
+          <ul class=flashes>
+           for message in messages %}
+            <li>{{ message }}</li>
+           endfor %}
+          </ul>
+         endif %}
+       endwith %}
+    -->
       <h1>MeetMe</h1>
       <h2>Figure out when to meet!</h2>
       <!-- for use later
@@ -30,8 +37,13 @@
       <button class="form_button">Button</button>
       -->
       <div class="content" id="creator_view">
-
+        Start Date <input type="date" name="start_date"><br />
+        End Date <input type="date" name="end_date"><br />
+        Start Time <input type="time" name="start_time"><br />
+        End Time <input type="time" name="end_time"><br /><br />
+        <button class="form_button" id="date">Next Step: Calendars</button>
       </div>
+      <!--
       <div class="content" id="receiver_view">
 
       </div>
@@ -44,6 +56,7 @@
       <div class="content" id="calendar">
 
       </div>
+    -->
     </div>
   </body>
 </html>
