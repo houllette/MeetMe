@@ -51,10 +51,7 @@ def index():
     app.logger.debug("Entering index")
     if 'begin_date' not in flask.session:
       init_session_values()
-    return render_template('index.html')
 
-@app.route("/choose")
-def choose():
     app.logger.debug("Checking credentials for Google calendar access")
     credentials = valid_credentials()
     if not credentials:
@@ -63,7 +60,7 @@ def choose():
 
     gcal_service = get_gcal_service(credentials)
     app.logger.debug("Returned from get_gcal_service")
-    flask.g.calendars = list_calendars(gcal_service)
+    flask.session['calendars'] = list_calendars(gcal_service)
     return render_template('index.html')
 
 @app.route('/setcalendar')
@@ -123,8 +120,7 @@ def setrange():
         flask.session["start_time"] = end_time
         flask.session["end_time"] = start_time
 
-    #needs to go to choose now
-    rslt = { "key": "value" }
+    rslt = flask.session['calendars']
     return jsonify(result=rslt)
 
 
@@ -160,7 +156,7 @@ def get_gcal_service(credentials):
   authorization. If authorization is already in effect,
   we'll just return with the authorization. Otherwise,
   control flow will be interrupted by authorization, and we'll
-  end up redirected back to /choose *without a service object*.
+  end up redirected back to /index *without a service object*.
   Then the second call will succeed without additional authorization.
   """
   app.logger.debug("Entering get_gcal_service")
@@ -194,7 +190,7 @@ def oauth2callback():
     credentials = flow.step2_exchange(auth_code)
     flask.session['credentials'] = credentials.to_json()
     app.logger.debug("Got credentials")
-    return flask.redirect(flask.url_for('choose'))
+    return flask.redirect(flask.url_for('index'))
 
 #################################
 #
