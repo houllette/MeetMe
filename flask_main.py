@@ -77,9 +77,13 @@ def calendar():
     app.logger.debug("Entering display of calendar")
     #FIXME: Should pull from the database using the unique ID given to this
     #function to retrieve stored busytimes and display formatted calendar
-    
+
     #chunk = retrieved value from database
+    #free should be calculated using the "communal chunk of busytimes"
     #flask.g.free_time = free_time(chunk, flask.session['start_time'], flask.session['end_time'], flask.session['daterange'].split())
+
+    #free_times and busy times should be sent back via ajax (easiest for making it look nice)
+    #or just use flask.g variables and use jinja2 (have to figure that out to make it look nice but easiest to backend code)
     return render_template('calendar.html')
 
 
