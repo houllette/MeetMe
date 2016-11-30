@@ -63,21 +63,6 @@ def index():
     flask.session['calendars'] = list_calendars(gcal_service)
     return render_template('index.html')
 
-@app.route('/setcalendar')
-def setcalendar():
-    selected_calendars = request.form.getlist("calendar")
-    credentials = valid_credentials()
-    if not credentials:
-      app.logger.debug("Redirecting to authorization")
-      return flask.redirect(flask.url_for('oauth2callback'))
-
-    gcal_service = get_gcal_service(credentials)
-    app.logger.debug("Returned from get_gcal_service")
-    busytimes = conflicting_events(list_events(gcal_service, selected_calendars, flask.session['begin_date'], flask.session['end_date']), flask.session['begin_time'], flask.session['end_time'])
-    flask.g.block = busytimes
-    flask.session['busytimes'] = busytimes
-    return render_template('index.html')
-
 @app.route('/setblock')
 def setblock():
     selected_events = request.form.getlist('blocking_event')
@@ -106,10 +91,10 @@ def setrange():
     end_date = interpret_date(request.args.get("end_date", type=str))
     if start_date < end_date:
         flask.session["start_date"] = start_date
-        flask.session["end_date"] = end_date
+        flask.session["end_date"] = next_day(end_date)
     else:
         flask.session["start_date"] = end_date
-        flask.session["end_date"] = start_date
+        flask.session["end_date"] = next_day(start_date)
 
     start_time = interpret_time(request.args.get("start_time", type=str))
     end_time = interpret_time(request.args.get("end_time", type=str))
@@ -119,8 +104,25 @@ def setrange():
     else:
         flask.session["start_time"] = end_time
         flask.session["end_time"] = start_time
-
+    app.logger.debug(flask.session['start_date'])
+    app.logger.debug(flask.session['end_date'])
     rslt = flask.session['calendars']
+    return jsonify(result=rslt)
+
+@app.route("/_setcalendar")
+def setcalendar():
+    app.logger.debug("Entering setcalendar")
+    selected_calendars = request.args.get("selected_calendars", type=str).split(',')
+    print(selected_calendars)
+    credentials = valid_credentials()
+    if not credentials:
+      app.logger.debug("Redirecting to authorization")
+      return flask.redirect(flask.url_for('oauth2callback'))
+
+    gcal_service = get_gcal_service(credentials)
+    app.logger.debug("Returned from get_gcal_service")
+    flask.session['busytimes'] = conflicting_events(list_events(gcal_service, selected_calendars, flask.session['start_date'], flask.session['end_date']), flask.session['start_time'], flask.session['end_time'])
+    rslt = flask.session['busytimes']
     return jsonify(result=rslt)
 
 
@@ -254,8 +256,10 @@ def interpret_date( text ):
     with the local time zone.
     """
     try:
-      as_arrow = arrow.get(text).replace(
-          tzinfo=tz.tzlocal())
+        if text[4] == '-':
+            as_arrow = arrow.get(text).replace(tzinfo=tz.tzlocal())
+        else:
+            as_arrow = arrow.get(text, "MM/DD/YYYY").replace(tzinfo=tz.tzlocal())
     except:
         flask.flash("Date '{}' didn't fit expected format 12/31/2001")
         raise

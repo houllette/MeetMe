@@ -23,17 +23,6 @@
        {% endwith %}
       <h1>MeetMe</h1>
       <h2>Figure out when to meet!</h2>
-      <!-- for use later
-      <form>
-       <fieldset>
-        <legend>Calendars</legend>
-        <input type="checkbox" value="calendar1"> Calendar 1<br />
-        <input type="checkbox" value="calendar2"> Calendar 2<br />
-        <input type="checkbox" value="calendar3"> Calendar 3<br />
-       </fieldset>
-      </form>
-      <button class="form_button">Button</button>
-      -->
       <div class="content" id="creator_view">
         Start Date <input type="date" name="start_date"><br />
         End Date <input type="date" name="end_date"><br />
@@ -53,7 +42,12 @@
         <button class="form_button" id="calendars">Next Step: Conflicts</button>
       </div>
       <div class="content" id="conflict_pick">
-
+        <form>
+         <fieldset name="conflicts">
+          <legend>Conflicts</legend>
+         </fieldset>
+        </form>
+        <button class="form_button" id="conflicts">Next Step: Conflicts</button>
       </div>
     </div>
   </body>

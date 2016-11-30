@@ -23,17 +23,32 @@ $(document).ready(function() {
   });
 
   $("#calendars").click(function() {
-    var txt = "test";
-    alert(txt);
-    $("calendar_pick").fadeOut();
-    /*
-    $.getJSON( "/_setrange", { text: txt },
-      function(data) {
-
-        $("conflict_pick").fadeIn();
+    var checked = [];
+    $("input:checkbox[name='calendar']:checked").each(function(){
+      checked.push($(this).val());
+    });
+    if (checked.length == 0) {
+      alert("Please select a calendar to pull events from!");
+    } else {
+      var checked_csv = "";
+      for (var i=0;i<checked.length;i++) {
+        checked_csv += String(checked[i]);
+        if (i != (checked.length-1)) {
+            checked_csv += ",";
+        }
       }
-    );
-    */
+      $("#calendar_pick").fadeOut();
+      $.getJSON( "/_setcalendar", { selected_calendars: checked_csv },
+        function(data) {
+          for (var key in data.result) {
+            $("[name='conflicts']").append('<input type="checkbox" name="conflict" value='+data.result[key]['id']+' checked> '+data.result[key]['summary']+'<br />');
+          }
+          setTimeout(function() {
+            $("#conflict_pick").fadeIn()
+          }, 400);
+        }
+      );
+    }
   });
 
 
