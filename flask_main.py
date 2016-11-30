@@ -63,12 +63,25 @@ def index():
     flask.session['calendars'] = list_calendars(gcal_service)
     return render_template('index.html')
 
-@app.route('/setblock')
-def setblock():
-    selected_events = request.form.getlist('blocking_event')
+@app.route('/submit')
+def submit():
+    #FIXME: This is where the submitting to the database should happen.
+    selected_events = request.form.getlist('conflict')
     flask.g.block_two = flask.session['busytimes']
-    flask.g.free_time = free_time(condense_busytimes(list_blocking(selected_events, flask.session['busytimes'])), flask.session['begin_time'], flask.session['end_time'], flask.session['daterange'].split())
-    return render_template('index.html')
+    chunk = condense_busytimes(list_blocking(selected_events, flask.session['busytimes']))
+    #FIXME: chunk is what should be stored in database
+    return flask.redirect(flask.url_for('calendar'))
+
+@app.route('/calendar')
+def calendar():
+    app.logger.debug("Entering display of calendar")
+    #FIXME: Should pull from the database using the unique ID given to this
+    #function to retrieve stored busytimes and display formatted calendar
+    
+    #chunk = retrieved value from database
+    #flask.g.free_time = free_time(chunk, flask.session['start_time'], flask.session['end_time'], flask.session['daterange'].split())
+    return render_template('calendar.html')
+
 
 ###############
 # AJAX request handlers

@@ -80,6 +80,9 @@ def conflicting_events(events, user_defined_begin_time, user_defined_end_time):
     return conflict
 
 def list_blocking(selected_event_ids, blocking_events_list):
+    '''
+    Returns list of events that conflict that the user has selected cannot be moved
+    '''
     result = [ ]
     for event_id in selected_event_ids:
         for event in blocking_events_list:
@@ -88,6 +91,9 @@ def list_blocking(selected_event_ids, blocking_events_list):
     return result
 
 def condense_busytimes(events):
+    '''
+    Given a list of events, it condenses down into singular chunks
+    '''
     condensed = [ ]
     current_date = ''
     current_start_time = ''
