@@ -23,9 +23,7 @@ import httplib2   # used in oauth2 flow
 # Google API for services
 from apiclient import discovery
 
-###
 # Globals
-###
 import CONFIG
 import secrets.admin_secrets  # Per-machine secrets
 import secrets.client_secrets # Per-application secrets
@@ -38,6 +36,24 @@ app.secret_key=CONFIG.secret_key
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
 CLIENT_SECRET_FILE = secrets.admin_secrets.google_key_file  ## You'll need this
 APPLICATION_NAME = 'MeetMe Class Project'
+
+# Mongo database
+import pymongo
+from pymongo import MongoClient
+MONGO_CLIENT_URL = "mongodb://{}:{}@localhost:{}/{}".format(
+    secrets.client_secrets.db_user,
+    secrets.client_secrets.db_user_pw,
+    secrets.admin_secrets.port,
+    secrets.client_secrets.db)
+
+# Database connection per server process
+try:
+    dbclient = MongoClient(MONGO_CLIENT_URL)
+    db = getattr(dbclient, secrets.client_secrets.db)
+    collection = db.dated
+except:
+    print("Failure opening database.  Is Mongo running? Correct password?")
+    sys.exit(1)
 
 #############################
 #
