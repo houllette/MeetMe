@@ -40,6 +40,7 @@ APPLICATION_NAME = 'MeetMe Class Project'
 # Mongo database
 import pymongo
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 MONGO_CLIENT_URL = "mongodb://{}:{}@localhost:{}/{}".format(
     secrets.client_secrets.db_user,
     secrets.client_secrets.db_user_pw,
@@ -77,20 +78,62 @@ def index():
     gcal_service = get_gcal_service(credentials)
     app.logger.debug("Returned from get_gcal_service")
     flask.session['calendars'] = list_calendars(gcal_service)
+    flask.session['db_id'] = str(ObjectId())
     return render_template('index.html')
 
-@app.route('/submit')
-def submit():
-    #FIXME: This is where the submitting to the database should happen.
+@app.route("/invite/<db_id>")
+def invite(db_id):
+    app.logger.debug("Entering invite")
+    if 'begin_date' not in flask.session:
+      init_session_values()
+
+    app.logger.debug("Checking credentials for Google calendar access")
+    credentials = valid_credentials()
+    if not credentials:
+      app.logger.debug("Redirecting to authorization")
+      return flask.redirect(flask.url_for('oauth2callback'))
+
+    gcal_service = get_gcal_service(credentials)
+    app.logger.debug("Returned from get_gcal_service")
+    flask.session['calendars'] = list_calendars(gcal_service)
+    flask.session['db_id'] = db_id
+    return render_template('invite.html')
+
+@app.route('/create', methods=['POST'])
+def create():
     selected_events = request.form.getlist('conflict')
     flask.g.block_two = flask.session['busytimes']
     chunk = condense_busytimes(list_blocking(selected_events, flask.session['busytimes']))
-    #FIXME: chunk is what should be stored in database
-    return flask.redirect(flask.url_for('calendar'))
+    collection.insert({'_id': flask.session['db_id'], 'data': {
+    'start_date': flask.session['start_date'],
+    'end_date': flask.session['end_date'],
+    'start_time': flask.session['start_time'],
+    'end_time': flask.session['end_time'],
+    'busytime_chunk': chunk
+    }})
+    return flask.redirect(flask.url_for('calendar', db_id=flask.session['db_id']))
 
-@app.route('/calendar')
-def calendar():
+@app.route('/submit', methods=['POST'])
+def submit():
+    selected_events = request.form.getlist('conflict')
+    flask.g.block_two = flask.session['busytimes']
+    chunk = condense_busytimes(list_blocking(selected_events, flask.session['busytimes']))
+    #FIXME: pull from database current value and call condense_busytimes on chunk, will need tweaking
+    collection.insert({'_id': flask.session['db_id'], 'data': {
+    'start_date': flask.session['start_date'],
+    'end_date': flask.session['end_date'],
+    'start_time': flask.session['start_time'],
+    'end_time': flask.session['end_time'],
+    'busytime_chunk': updated_chunk
+    }})
+    return flask.redirect(flask.url_for('calendar', db_id=flask.session['db_id']))
+
+@app.route('/calendar/<db_id>')
+def calendar(db_id):
     app.logger.debug("Entering display of calendar")
+    record = collection.find( { "_id": db_id } )
+    for doc in record:
+        app.logger.debug(doc)
     #FIXME: Should pull from the database using the unique ID given to this
     #function to retrieve stored busytimes and display formatted calendar
 

@@ -116,8 +116,8 @@ def condense_busytimes(events):
                 #append what we have
                 condensed.append({
                 'date': current_date,
-                'start_time': current_start_time,
-                'end_time': current_end_time
+                'start_time': current_start_time.isoformat(),
+                'end_time': current_end_time.isoformat()
                 })
                 current_date = event['output_date']
                 current_start_time = event_start
@@ -135,16 +135,16 @@ def condense_busytimes(events):
                     #append what we have
                     condensed.append({
                     'date': current_date,
-                    'start_time': current_start_time,
-                    'end_time': current_end_time
+                    'start_time': current_start_time.isoformat(),
+                    'end_time': current_end_time.isoformat()
                     })
                     current_date = event['output_date']
                     current_start_time = event_start
                     current_end_time = event_end
     condensed.append({
     'date': current_date,
-    'start_time': current_start_time,
-    'end_time': current_end_time
+    'start_time': current_start_time.isoformat(),
+    'end_time': current_end_time.isoformat()
     })
     return condensed
 
@@ -168,8 +168,8 @@ def free_time(busytimes, user_defined_begin_time, user_defined_end_time, dateran
             if current_start_time != '': #this is for a free_time block that may have been started due to time left over after previous day's last event
                 free_times.append({
                 'date': current_date,
-                'start_time': current_start_time,
-                'end_time': end_time,
+                'start_time': current_start_time.isoformat(),
+                'end_time': end_time.isoformat(),
                 'output_start_time': str(current_start_time).split('T')[1][0:5],
                 'output_end_time': str(end_time).split('T')[1][0:5]
                 })

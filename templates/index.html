@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>MeetMe</title>
-    <!-- MIGHT HAVE TO REMOVE ../ FOR PRODUCTION -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stylesheet.css')}}">
 
     <!-- jquery from a content distribution network; probably cached -->
@@ -30,9 +29,6 @@
         End Time <input type="time" name="end_time"><br />
         <button class="form_button" id="date">Next Step: Calendars</button>
       </div>
-      <div class="content" id="receiver_view">
-
-      </div>
       <div class="content" id="calendar_pick">
         <form>
          <fieldset name="calendars">
@@ -42,12 +38,12 @@
         <button class="form_button" id="calendars">Next Step: Conflicts</button>
       </div>
       <div class="content" id="conflict_pick">
-        <form action="/submit" method="post">
+        <form action="/create" method="post">
          <fieldset name="conflicts">
           <legend>Conflicts</legend>
          </fieldset>
+         <input type="submit" class="form_button" id="conflicts" value="Next Step: Create!">
         </form>
-        <button type="submit" class="form_button" id="conflicts">Next Step: Create!</button>
       </div>
     </div>
   </body>

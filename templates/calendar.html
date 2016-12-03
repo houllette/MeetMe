@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MeetMe</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stylesheet.css')}}">
+
+    <!-- jquery from a content distribution network; probably cached -->
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/script.js')}}"></script>
+  </head>
+  <body>
+    <div class="container">
+       {% with messages = get_flashed_messages() %}
+         {% if messages %}
+          <ul class=flashes>
+           for message in messages %}
+            <li>{{ message }}</li>
+           endfor %}
+          </ul>
+         {% endif %}
+       {% endwith %}
+    </div>
+  </body>
+</html>
