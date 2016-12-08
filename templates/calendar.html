@@ -7,7 +7,6 @@
     <!-- jquery from a content distribution network; probably cached -->
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/script.js')}}"></script>
   </head>
   <body>
     <div class="container">
@@ -20,6 +19,27 @@
           </ul>
          {% endif %}
        {% endwith %}
+      <h1>MeetMe</h1>
+      <h2>Figure out when to meet!</h2>
+      <div class="content" id="calendar">
+        {% if g.freetime is defined %}
+        <table border="1">
+          <tr>
+        {% for event in g.freetime %}
+            <td>{{ event.date }}<hr>{{ event.start_time }} - {{ event.end_time }}</td>
+        {% if loop.index is divisibleby 7 %}
+          </tr>
+          <tr>
+        {% endif %}
+        {% endfor %}
+          </tr>
+        </table>
+        {% endif %}
+        {% if g.db_id is defined %}
+        <h2>Share this link with your friends!</h2>
+        <h3>http://localhost:5000/invite/{{ g.db_id }}<h3>
+        {% endif %}
+      </div>
     </div>
   </body>
 </html>

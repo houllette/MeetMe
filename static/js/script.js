@@ -1,6 +1,5 @@
 $(document).ready(function() {
 
-  $("#receiver_view").hide();
   $("#calendar_pick").hide();
   $("#conflict_pick").hide();
 
@@ -11,6 +10,20 @@ $(document).ready(function() {
     var end_time = $("[name='end_time']").val();
     $("#creator_view").fadeOut();
     $.getJSON( "/_setrange", { start_date: start_date, end_date: end_date, start_time: start_time, end_time: end_time },
+      function(data) {
+        for (var key in data.result) {
+          $("[name='calendars']").append('<input type="checkbox" name="calendar" value='+data.result[key]['id']+'> '+data.result[key]['summary']+'<br />');
+        }
+        setTimeout(function() {
+          $("#calendar_pick").fadeIn()
+        }, 400);
+      }
+    );
+  });
+
+  $("#acknowledge").click(function() {
+    $("#receiver_view").fadeOut();
+    $.getJSON( "/_acknowledge", { },
       function(data) {
         for (var key in data.result) {
           $("[name='calendars']").append('<input type="checkbox" name="calendar" value='+data.result[key]['id']+'> '+data.result[key]['summary']+'<br />');
@@ -50,6 +63,4 @@ $(document).ready(function() {
       );
     }
   });
-
-
 });

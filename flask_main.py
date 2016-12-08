@@ -97,13 +97,21 @@ def invite(db_id):
     app.logger.debug("Returned from get_gcal_service")
     flask.session['calendars'] = list_calendars(gcal_service)
     flask.session['db_id'] = db_id
+    #FIXME: need to pull from database the start&end times and dates and store as variable
+    record = collection.find( { "_id": db_id } )
+    data = record[0]['data']
+
+    flask.g.start_date = data['start_date'].split("T")[0]
+    flask.g.end_date = data['end_date'].split("T")[0]
+    flask.g.start_time = data['start_time'].split("T")[1][0:5]
+    flask.g.end_time = data['end_time'].split("T")[1][0:5]
     return render_template('invite.html')
 
 @app.route('/create', methods=['POST'])
 def create():
     selected_events = request.form.getlist('conflict')
     flask.g.block_two = flask.session['busytimes']
-    chunk = condense_busytimes(list_blocking(selected_events, flask.session['busytimes']))
+    chunk = condense2(list_blocking(selected_events, flask.session['busytimes']))
     collection.insert({'_id': flask.session['db_id'], 'data': {
     'start_date': flask.session['start_date'],
     'end_date': flask.session['end_date'],
@@ -117,32 +125,29 @@ def create():
 def submit():
     selected_events = request.form.getlist('conflict')
     flask.g.block_two = flask.session['busytimes']
-    chunk = condense_busytimes(list_blocking(selected_events, flask.session['busytimes']))
-    #FIXME: pull from database current value and call condense_busytimes on chunk, will need tweaking
-    collection.insert({'_id': flask.session['db_id'], 'data': {
-    'start_date': flask.session['start_date'],
-    'end_date': flask.session['end_date'],
-    'start_time': flask.session['start_time'],
-    'end_time': flask.session['end_time'],
-    'busytime_chunk': updated_chunk
-    }})
+    chunk = condense2(list_blocking(selected_events, flask.session['busytimes']))
+    record = collection.find( { "_id": flask.session['db_id'] } )
+    data = record[0]['data']
+    communal_busytime = data['busytime_chunk']
+    updated_chunk = condense2(combine(communal_busytime, chunk))
+    app.logger.debug(updated_chunk)
+    collection.update_one({'_id': flask.session['db_id']}, {'$set': {'data.busytime_chunk': updated_chunk}}, upsert=False)
     return flask.redirect(flask.url_for('calendar', db_id=flask.session['db_id']))
 
 @app.route('/calendar/<db_id>')
 def calendar(db_id):
     app.logger.debug("Entering display of calendar")
+
     record = collection.find( { "_id": db_id } )
-    for doc in record:
-        app.logger.debug(doc)
-    #FIXME: Should pull from the database using the unique ID given to this
-    #function to retrieve stored busytimes and display formatted calendar
+    data = record[0]['data']
 
-    #chunk = retrieved value from database
-    #free should be calculated using the "communal chunk of busytimes"
-    #flask.g.free_time = free_time(chunk, flask.session['start_time'], flask.session['end_time'], flask.session['daterange'].split())
+    chunk = data['busytime_chunk']
+    start_time = data['start_time']
+    end_time = data['end_time']
+    daterange = [data['start_date'], data['end_date']]
 
-    #free_times and busy times should be sent back via ajax (easiest for making it look nice)
-    #or just use flask.g variables and use jinja2 (have to figure that out to make it look nice but easiest to backend code)
+    flask.g.freetime = freetime2(chunk, start_time, end_time, daterange) #FIXME: This doesnt quite work cause free_time is expecting events in relative proximity to each other timewise
+    flask.g.db_id = db_id
     return render_template('calendar.html')
 
 
@@ -151,15 +156,6 @@ def calendar(db_id):
 #   These return JSON, rather than rendering pages.
 ###############
 
-@app.route("/_example")
-def example():
-    """
-    Example ajax request handler
-    """
-    app.logger.debug("Got a JSON request");
-    rslt = { "key": "value" }
-    return jsonify(result=rslt)
-
 @app.route("/_setrange")
 def setrange():
     app.logger.debug("Entering setrange")
@@ -167,10 +163,10 @@ def setrange():
     end_date = interpret_date(request.args.get("end_date", type=str))
     if start_date < end_date:
         flask.session["start_date"] = start_date
-        flask.session["end_date"] = next_day(end_date)
+        flask.session["end_date"] = end_date
     else:
         flask.session["start_date"] = end_date
-        flask.session["end_date"] = next_day(start_date)
+        flask.session["end_date"] = start_date
 
     start_time = interpret_time(request.args.get("start_time", type=str))
     end_time = interpret_time(request.args.get("end_time", type=str))
@@ -182,6 +178,12 @@ def setrange():
         flask.session["end_time"] = start_time
     app.logger.debug(flask.session['start_date'])
     app.logger.debug(flask.session['end_date'])
+    rslt = flask.session['calendars']
+    return jsonify(result=rslt)
+
+@app.route("/_acknowledge")
+def acknowledge():
+    app.logger.debug("Entering proceed/acknowledge")
     rslt = flask.session['calendars']
     return jsonify(result=rslt)
 
@@ -197,10 +199,9 @@ def setcalendar():
 
     gcal_service = get_gcal_service(credentials)
     app.logger.debug("Returned from get_gcal_service")
-    flask.session['busytimes'] = conflicting_events(list_events(gcal_service, selected_calendars, flask.session['start_date'], flask.session['end_date']), flask.session['start_time'], flask.session['end_time'])
+    flask.session['busytimes'] = conflicting_events(list_events(gcal_service, selected_calendars, flask.session['start_date'], next_day(flask.session['end_date'])), flask.session['start_time'], flask.session['end_time'])
     rslt = flask.session['busytimes']
     return jsonify(result=rslt)
-
 
 ##################################
 #

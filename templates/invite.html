@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MeetMe</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stylesheet.css')}}">
+
+    <!-- jquery from a content distribution network; probably cached -->
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/script.js')}}"></script>
+  </head>
+  <body>
+    <div class="container">
+       {% with messages = get_flashed_messages() %}
+         {% if messages %}
+          <ul class=flashes>
+           for message in messages %}
+            <li>{{ message }}</li>
+           endfor %}
+          </ul>
+         {% endif %}
+       {% endwith %}
+      <h1>MeetMe</h1>
+      <h2>Figure out when to meet!</h2>
+      <div class="content" id="receiver_view">
+        <h3>The requestor has set these times!</h3>
+        Start Date: {{ g.start_date }}<br />
+        End Date: {{ g.end_date }}<br />
+        Start Time: {{ g.start_time }}<br />
+        End Time: {{ g.end_time }}<br />
+        <button class="form_button" id="acknowledge">Next Step: Calendars</button>
+      </div>
+      <div class="content" id="calendar_pick">
+        <form>
+         <fieldset name="calendars">
+          <legend>Calendars</legend>
+         </fieldset>
+        </form>
+        <button class="form_button" id="calendars">Next Step: Conflicts</button>
+      </div>
+      <div class="content" id="conflict_pick">
+        <form action="/submit" method="post">
+         <fieldset name="conflicts">
+          <legend>Conflicts</legend>
+         </fieldset>
+         <input type="submit" class="form_button" id="conflicts" value="Next Step: Submit!">
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
