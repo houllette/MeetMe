@@ -111,7 +111,7 @@ def invite(db_id):
 def create():
     selected_events = request.form.getlist('conflict')
     flask.g.block_two = flask.session['busytimes']
-    chunk = condense2(list_blocking(selected_events, flask.session['busytimes']))
+    chunk = condense(list_blocking(selected_events, flask.session['busytimes']))
     collection.insert({'_id': flask.session['db_id'], 'data': {
     'start_date': flask.session['start_date'],
     'end_date': flask.session['end_date'],
@@ -125,11 +125,11 @@ def create():
 def submit():
     selected_events = request.form.getlist('conflict')
     flask.g.block_two = flask.session['busytimes']
-    chunk = condense2(list_blocking(selected_events, flask.session['busytimes']))
+    chunk = condense(list_blocking(selected_events, flask.session['busytimes']))
     record = collection.find( { "_id": flask.session['db_id'] } )
     data = record[0]['data']
     communal_busytime = data['busytime_chunk']
-    updated_chunk = condense2(combine(communal_busytime, chunk))
+    updated_chunk = condense(combine(communal_busytime, chunk))
     app.logger.debug(updated_chunk)
     collection.update_one({'_id': flask.session['db_id']}, {'$set': {'data.busytime_chunk': updated_chunk}}, upsert=False)
     return flask.redirect(flask.url_for('calendar', db_id=flask.session['db_id']))
@@ -146,7 +146,7 @@ def calendar(db_id):
     end_time = data['end_time']
     daterange = [data['start_date'], data['end_date']]
 
-    flask.g.freetime = freetime2(chunk, start_time, end_time, daterange) #FIXME: This doesnt quite work cause free_time is expecting events in relative proximity to each other timewise
+    flask.g.freetime = freetime(chunk, start_time, end_time, daterange)
     flask.g.db_id = db_id
     return render_template('calendar.html')
 
