@@ -145,7 +145,7 @@ def calendar(db_id):
     end_time = data['end_time']
     daterange = [data['start_date'], data['end_date']]
 
-    flask.g.freetime = freetime(chunk, start_time, end_time, daterange)
+    flask.g.freetime = make_readable(freetime(chunk, start_time, end_time, daterange))
     flask.g.db_id = db_id
     return render_template('calendar.html')
 
@@ -398,6 +398,19 @@ def cal_sort_key( cal ):
     else:
        primary_key = "X"
     return (primary_key, selected_key, cal["summary"])
+
+def make_readable( freetimes ):
+    '''
+    Given a list of freetimes, returns list of nicely formatted times
+    '''
+    readable = [ ]
+    for time in freetimes:
+        readable.append({
+        'date': time['date'],
+        'start_time': time['start_time'].split("T")[1][0:5],
+        'end_time': time['end_time'].split("T")[1][0:5]
+        })
+    return readable
 
 ###################
 

@@ -21,6 +21,7 @@
        {% endwith %}
       <h1>MeetMe</h1>
       <h2>Figure out when to meet!</h2>
+      <h4>Below are sections of free times that everyone who has submitted can make!</h4>
       <div class="content" id="calendar">
         {% if g.freetime is defined %}
         <table border="1">
@@ -37,7 +38,7 @@
         {% endif %}
         {% if g.db_id is defined %}
         <h2>Share this link with your friends!</h2>
-        <h3>http://localhost:5000/invite/{{ g.db_id }}<h3>
+        <h3><a href="http://localhost:5000/invite/{{ g.db_id }}">http://localhost:5000/invite/{{ g.db_id }}</a><h3>
         {% endif %}
       </div>
     </div>
