@@ -131,75 +131,50 @@ def combine(main_busytime_list, merging_list):
         if busytime['date'] == '':
             days[busytime['date']] = [ ]
             days[busytime['date']].append(busytime)
-            print("APPEND 1"+str(busytime)+"\n\n")
         else:
             if busytime['date'] != current_date:
                 days[busytime['date']] = [ ]
                 days[busytime['date']].append(busytime)
                 current_date = busytime['date']
-                print("APPEND 2"+str(busytime)+"\n\n")
             else:
                 days[busytime['date']].append(busytime)
-                print("APPEND 3"+str(busytime)+"\n\n")
-    print("DAYS FROM CREATION "+str(days)+"\n\n")
     for busytime in merging_list:
         if busytime['date'] in days:
             days[busytime['date']].append(busytime)
-            print("APPEND 4"+str(busytime)+"\n\n")
         else:
             days[busytime['date']] = [ ]
             days[busytime['date']].append(busytime)
-            print("APPEND 5"+str(busytime)+"\n\n")
     for day in days:
-        print("DAY TOTAL: "+str(days[day])+"\n\n")
         merged += days[day]
-    print("MERGED "+str(merged)+"\n\n")
     return merged
 
 def condense(busytimes):
     condensed = [ ]
     flagged = [ ]
-    print(str(busytimes))
     for time in busytimes:
-        print("\ntime\n"+str(time)+"\n\n")
         if len(flagged) == 0 or time not in flagged:
             chunk_start = arrow.get(time['start_time'])
             chunk_end = arrow.get(time['end_time'])
             for compare in busytimes:
-                print("\ncompare\n"+str(compare)+"\n\n")
                 compare_start = arrow.get(compare['start_time'])
                 compare_end = arrow.get(compare['end_time'])
                 if chunk_start <= compare_start and compare_start <= chunk_end and chunk_end <= compare_end:
                     chunk_end = compare_end
-                    print("\nremoving 1\n"+str(compare)+"\n\n")
-                    print("current chunk\n"+str(chunk_start)+"\n"+str(chunk_end)+"\n\n")
-                    #busytimes.remove(compare)
                     flagged.append(compare)
                 elif compare_start <= chunk_start and chunk_start <= compare_end and compare_end <= chunk_end:
                     chunk_start = compare_start
-                    print("\nremoving 2\n"+str(compare)+"\n\n")
-                    print("current chunk\n"+str(chunk_start)+"\n"+str(chunk_end)+"\n\n")
-                    #busytimes.remove(compare)
                     flagged.append(compare)
                 elif chunk_start <= compare_start and compare_end <= chunk_end:
-                    print("\nremoving 3\n"+str(compare)+"\n\n")
-                    print("current chunk\n"+str(chunk_start)+"\n"+str(chunk_end)+"\n\n")
-                    #busytimes.remove(compare)
                     flagged.append(compare)
                 elif compare_start <= chunk_start and chunk_end <= compare_end:
                     chunk_start = compare_start
                     chunk_end = compare_end
-                    print("\nremoving 4\n"+str(compare)+"\n\n")
-                    print("current chunk\n"+str(chunk_start)+"\n"+str(chunk_end)+"\n\n")
-                    #busytimes.remove(compare)
                     flagged.append(compare)
-            print("about to add current chunk\n"+str(chunk_start)+"\n"+str(chunk_end)+"\n\n")
             condensed.append({
             'date': chunk_start.isoformat().split("T")[0],
             'start_time': chunk_start.isoformat(),
             'end_time': chunk_end.isoformat(),
             })
-    print("condensed "+str(condensed))
     return condensed
 
 def freetime(busytimes, start_time, end_time, daterange):
@@ -228,31 +203,22 @@ def freetime(busytimes, start_time, end_time, daterange):
                 days[busytime['date']].append(busytime)
     date_list.reverse()
     for date in date_list:
-        print(date)
         display = True
         chunk_start = start_time
         chunk_end = end_time
         if date in days:
             for busytime in days[date]:
-                print(str(busytime))
                 busy_start = arrow.get(busytime['start_time'].split('T')[1][0:8], 'HH:mm:ss').replace(year=2016, tzinfo=tz.tzlocal())
                 busy_end = arrow.get(busytime['end_time'].split('T')[1][0:8], 'HH:mm:ss').replace(year=2016, tzinfo=tz.tzlocal())
-                print("busy start "+busy_start.isoformat())
-                print("busy_end "+busy_end.isoformat())
-                print("chunk start "+chunk_start.isoformat())
-                print("chunk_end "+chunk_end.isoformat()+"\n\n")
                 if busy_start <= chunk_start and chunk_end <= busy_end:
                     display = False
                     break
                 elif busy_start <= chunk_start and chunk_start <= busy_end and busy_end <= chunk_end:
                     chunk_start = busy_end
-                    print("\nchunk started\n\n")
                 elif busy_start <= chunk_end and chunk_end <= busy_end: # and busy_start <= chunk_start:
                     chunk_end = busy_start
-                    print("\nchunk closed\n\n")
                 elif chunk_start <= busy_start and busy_end <= chunk_end:
                     chunk_end = busy_start
-                    print("\nchunk appending\n\n")
                     free_times.append({
                     'date': date,
                     'start_time': chunk_start.isoformat(),

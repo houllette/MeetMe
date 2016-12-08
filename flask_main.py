@@ -130,7 +130,6 @@ def submit():
     data = record[0]['data']
     communal_busytime = data['busytime_chunk']
     updated_chunk = condense(combine(communal_busytime, chunk))
-    app.logger.debug(updated_chunk)
     collection.update_one({'_id': flask.session['db_id']}, {'$set': {'data.busytime_chunk': updated_chunk}}, upsert=False)
     return flask.redirect(flask.url_for('calendar', db_id=flask.session['db_id']))
 
@@ -176,8 +175,6 @@ def setrange():
     else:
         flask.session["start_time"] = end_time
         flask.session["end_time"] = start_time
-    app.logger.debug(flask.session['start_date'])
-    app.logger.debug(flask.session['end_date'])
     rslt = flask.session['calendars']
     return jsonify(result=rslt)
 
@@ -191,7 +188,6 @@ def acknowledge():
 def setcalendar():
     app.logger.debug("Entering setcalendar")
     selected_calendars = request.args.get("selected_calendars", type=str).split(',')
-    print(selected_calendars)
     credentials = valid_credentials()
     if not credentials:
       app.logger.debug("Redirecting to authorization")
