@@ -38,7 +38,7 @@
         {% endif %}
         {% if g.db_id is defined %}
         <h2>Share this link with your friends!</h2>
-        <h3><a href="http://localhost:5000/invite/{{ g.db_id }}">http://localhost:5000/invite/{{ g.db_id }}</a><h3>
+        <h3><a href="{{ url_for('invite', db_id=g.db_id, _external=True) }}" target='_blank'>{{ url_for('invite', db_id=g.db_id, _external=True) }}</a><h3>
         {% endif %}
       </div>
     </div>
