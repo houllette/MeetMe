@@ -110,7 +110,6 @@ def invite(db_id):
 @app.route('/create', methods=['POST'])
 def create():
     selected_events = request.form.getlist('conflict')
-    flask.g.block_two = flask.session['busytimes']
     chunk = condense(list_blocking(selected_events, flask.session['busytimes']))
     collection.insert({'_id': flask.session['db_id'], 'data': {
     'start_date': flask.session['start_date'],
@@ -124,7 +123,6 @@ def create():
 @app.route('/submit', methods=['POST'])
 def submit():
     selected_events = request.form.getlist('conflict')
-    flask.g.block_two = flask.session['busytimes']
     chunk = condense(list_blocking(selected_events, flask.session['busytimes']))
     record = collection.find( { "_id": flask.session['db_id'] } )
     data = record[0]['data']
