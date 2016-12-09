@@ -133,6 +133,12 @@ def submit():
     collection.update_one({'_id': flask.session['db_id']}, {'$set': {'data.busytime_chunk': updated_chunk}}, upsert=False)
     return flask.redirect(flask.url_for('calendar', db_id=flask.session['db_id']))
 
+@app.route('/request_calendar', methods=['POST'])
+def request_calendar():
+    cal_id = request.form.get("cal_id", type=str)
+    #If I had more time I would implement a security check so hackers can't penetrate the site with SQLi
+    return flask.redirect(flask.url_for('calendar', db_id=cal_id))
+
 @app.route('/calendar/<db_id>')
 def calendar(db_id):
     app.logger.debug("Entering display of calendar")
