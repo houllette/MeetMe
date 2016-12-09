@@ -9,6 +9,7 @@ $(document).ready(function() {
     var start_time = $("[name='start_time']").val();
     var end_time = $("[name='end_time']").val();
     $("#creator_view").fadeOut();
+    $("#jump_to_calendar").hide();
     $.getJSON( "/_setrange", { start_date: start_date, end_date: end_date, start_time: start_time, end_time: end_time },
       function(data) {
         for (var key in data.result) {
